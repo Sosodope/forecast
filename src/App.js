@@ -10,10 +10,15 @@ class App extends Component {
   };
   componentDidMount() {
     fetch(
-      "https://api.openweathermap.org/data/2.5/forecast/daily?lat=35&lon=139&cnt=10&appid=14278b5cd4c3f8fc9b0cce818304c84a"
+      "https://api.openweathermap.org/data/2.5/forecast?lat=13&lon=100&appid=8be3d65cca94173480958df7d29d2623&units=metric"
     )
       .then(res => res.json())
-      .then(data => console.log(data));
+      .then(data =>
+        //console.log(data)
+        this.setState({
+          forecastResults: data.list
+        })
+      );
   }
   render() {
     return (
@@ -24,9 +29,10 @@ class App extends Component {
             return (
               <Forecast
                 key={forecast.dt}
-                day={format(forecast.dt_txt, "d/MMM")}
+                day={format(forecast.dt_txt, "dd")}
                 tempMax={forecast.main.temp_max.toFixed()}
                 tempMin={forecast.main.temp_min.toFixed()}
+                weatherType={forecast.weather[0].main}
               />
             );
           })}
