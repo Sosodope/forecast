@@ -1,6 +1,7 @@
 import React, { Component } from "react";
 import "./App.css";
 import Forecast from "./components/Forecast";
+import { format } from "date-fns";
 
 class App extends Component {
   state = {
@@ -9,10 +10,11 @@ class App extends Component {
   };
   componentDidMount() {
     fetch(
-      "https://api.openweathermap.org/data/2.5/forecast?id=524901&appid=8be3d65cca94173480958df7d29d2623"
+      "https://api.openweathermap.org/data/2.5/forecast?lat=13&lon=100&appid=8be3d65cca94173480958df7d29d2623&units=metric"
     )
       .then(res => res.json())
       .then(data =>
+        //console.log(data)
         this.setState({
           forecastResults: data.list
         })
@@ -26,9 +28,11 @@ class App extends Component {
           {this.state.forecastResults.map(forecast => {
             return (
               <Forecast
-                day={forecast.dt_txt}
-                tempMax={forecast.main.temp_max}
-                tempMin={forecast.main.temp_min}
+                key={forecast.dt}
+                day={format(forecast.dt_txt, "dd")}
+                tempMax={forecast.main.temp_max.toFixed()}
+                tempMin={forecast.main.temp_min.toFixed()}
+                weatherType={forecast.weather[0].main}
               />
             );
           })}
