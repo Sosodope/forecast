@@ -1,43 +1,88 @@
 import React, { Component } from "react";
 import "./App.css";
 import Forecast from "./components/Forecast";
-import { format } from "date-fns";
+import { Grid, Button } from "react-bootstrap";
 
 class App extends Component {
+  static API_KEY = "dfcc38b706ec5863b0dace9102f3740d";
   state = {
     forecastResults: [],
-    fiveDayForecast: []
+    zipCode: "52241"
   };
   componentDidMount() {
+    this.getForecast();
+  }
+  getForecast = () => {
     fetch(
-      "https://api.openweathermap.org/data/2.5/forecast?lat=13&lon=100&appid=8be3d65cca94173480958df7d29d2623&units=metric"
+      "https://api.openweathermap.org/data/2.5/forecast?lat=13&lon=100&appid=" +
+        App.API_KEY +
+        "&units=metric"
     )
       .then(res => res.json())
-      .then(data =>
-        //console.log(data)
-        this.setState({
-          forecastResults: data.list
-        })
-      );
-  }
+      .then(data => {
+        let truncatedData = data.list.filter(entry =>
+          entry.dt_txt.includes("12:00:00")
+        );
+        console.log(truncatedData);
+        let forecastResults = [];
+        truncatedData.forEach((elem, index) => {
+          let day = new Date(elem.dt_txt).getDay();
+          let currentElemWeather = elem.weather[0];
+          let dailyForecast = {
+            key: index,
+            day: day,
+            weather: currentElemWeather,
+            icon: currentElemWeather.icon
+          };
+          forecastResults.push(dailyForecast);
+        });
+        this.setState({ forecastResults: forecastResults });
+      });
+  };
   render() {
     return (
-      <div className="app">
-        <h1>Coming soon</h1>
-        <div className="app-results">
-          {this.state.forecastResults.map(forecast => {
-            return (
-              <Forecast
-                key={forecast.dt}
-                day={format(forecast.dt_txt, "dd")}
-                tempMax={forecast.main.temp_max.toFixed()}
-                tempMin={forecast.main.temp_min.toFixed()}
-                weatherType={forecast.weather[0].main}
+      <React.Fragment>
+        <h3 variant="display4" align="center">
+          Forecast
+        </h3>
+
+        <Grid container spacing={16}>
+          <Grid item xs={12}>
+            <Grid container justify="center">
+              <input
+                label="Zip Code"
+                value={this.state.zipCode}
+                onChange={evt => this.updateZipCode(evt)}
               />
-            );
-          })}
-        </div>
-      </div>
+            </Grid>
+          </Grid>
+          <Grid item xs={12}>
+            <Grid container justify="center">
+              <Button
+                variant="contained"
+                color="primary"
+                onClick={this.refreshForecast}
+              >
+                Refresh
+              </Button>
+            </Grid>
+          </Grid>
+          <Grid item xs={12}>
+            <Grid container justify="center" spacing={16}>
+              {this.state.forecastResults.map(value => (
+                <Grid key={value.key} item>
+                  <Forecast
+                    day={value.day}
+                    weather={value.weather}
+                    value={value.key}
+                    icon={value.icon}
+                  />
+                </Grid>
+              ))}
+            </Grid>
+          </Grid>
+        </Grid>
+      </React.Fragment>
     );
   }
 }
